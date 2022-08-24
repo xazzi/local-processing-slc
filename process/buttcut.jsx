@@ -1,6 +1,7 @@
 try{
-    var doc = app.activeDocument;
-    var allPaths = doc.pageItems
+
+    var $doc = app.activeDocument;
+    var allPaths = $doc.pageItems;
 
     var layer = {
         register: createLayer("register", true),
@@ -8,7 +9,7 @@ try{
     }
     
     // Move the regmarks to the register layer.
-    var allPaths = doc.pageItems
+    var allPaths = $doc.pageItems
     for(var i=0; i<allPaths.length; i++){
         if(allPaths[i].filled){
             var tempLayer = createLayer("register", true);
@@ -29,7 +30,7 @@ try{
     }
 
     // Get the locations of the current cut paths.
-    var allPaths = doc.pageItems
+    var allPaths = $doc.pageItems
     for(var i=0; i<allPaths.length; i++){
         allPaths[i].bottom = allPaths[i].top - allPaths[i].height;
         allPaths[i].right = allPaths[i].left + allPaths[i].width;
@@ -49,44 +50,37 @@ try{
     var keyline = layer.thruCut.pathItems.rectangle(perimeter.top, perimeter.left, perimeter.right - perimeter.left, perimeter.top - perimeter.bottom)
         keyline.pixelAligned = false;
         keyline.filled = false;
-        keyline.strokeColor = doc.swatches.getByName('Thru-cut').color;
+        keyline.strokeColor = $doc.swatches.getByName('Thru-cut').color;
     
     // Create the columns.
     var xAxis = perimeter.left + size.width
     while(xAxis < perimeter.right){
-        var path = doc.pathItems.add();
-            path.setEntirePath([[xAxis, perimeter.top], [xAxis, perimeter.bottom]]);
-            path.filled = false;
-            path.strokeColor = doc.swatches.getByName('Thru-cut').color;
+        var verticals = layer.thruCut.pathItems.add();
+            verticals.filled = false;
+            verticals.strokeColor = $doc.swatches.getByName('Thru-cut').color;
+            verticals.setEntirePath([[xAxis, perimeter.top], [xAxis, perimeter.bottom]]);
+            
             xAxis += size.width;
     }
 
     // Create the rows.
     var yAxis = perimeter.top - size.height
     while(yAxis > perimeter.bottom){
-        var path = doc.pathItems.add();
-            path.setEntirePath([[perimeter.left, yAxis], [perimeter.right, yAxis]]);
-            path.filled = false;
-            path.strokeColor = doc.swatches.getByName('Thru-cut').color;
+        var horizontals = $doc.pathItems.add();
+            horizontals.filled = false;
+            horizontals.strokeColor = $doc.swatches.getByName('Thru-cut').color;
+            horizontals.setEntirePath([[perimeter.left, yAxis], [perimeter.right, yAxis]]);
             yAxis -= size.height;
     }
 
     try{
-        doc.layers.getByName("Layer 1").remove();
+        $doc.layers.getByName("Layer 1").remove();
     }catch(e){}
 
-    // Save the document.
-    var pdfOptions = new PDFSaveOptions();
-        pdfOptions.pDFPreset = "Signs - Cut Files";
-    
-    var outfile = new File(dir.complete + "/" + doc.name);
-        doc.saveAs(outfile, pdfOptions);
-
-        doc.close(SaveOptions.DONOTSAVECHANGES)
-        file.remove()
-
 }catch(e){
-    //alert("Error!\n" + e);
+    $error = e.description; 
+    //$status = failJob;
+    $doc.close(SaveOptions.DONOTSAVECHANGES)
 }
 
 function createLayer(name, print){
